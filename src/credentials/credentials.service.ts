@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCredentialDto } from './dto/create-credential.dto';
-import { UpdateCredentialDto } from './dto/update-credential.dto';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CredentialsRepository } from './credentials.repository';
+import { CredentialDto } from './dto/credential.dto';
 
 @Injectable()
 export class CredentialsService {
-  create(createCredentialDto: CreateCredentialDto) {
-    return 'This action adds a new credential';
+  constructor(private readonly repository: CredentialsRepository) {}
+
+  async createCredential(userId: number, credentialsDTO: CredentialDto) {
+    const credential = await this.repository.findCredentialByUserIdAndTitle( userId, credentialsDTO.title );
+    if (credential) throw new ConflictException();
+    return await this.repository.createCredential(userId, credentialsDTO);
   }
 
-  findAll() {
-    return `This action returns all credentials`;
+  async findAllCredentialsByUserId(userId: number) {
+    return await this.repository.findAllCredentialsByUserId(userId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} credential`;
+  async findCredentialById(id: number, userId: number) {
+    const credential = await this.repository.findCredentialById(id);
+    if (credential.length === 0) throw new NotFoundException();
+    if (credential[0].userId !== userId) throw new ForbiddenException();
+    return credential;
   }
 
-  update(id: number, updateCredentialDto: UpdateCredentialDto) {
-    return `This action updates a #${id} credential`;
+  async deleteCredential(id: number, userId: number) {
+    const credential = await this.repository.findCredentialById(id);
+    if (credential.length === 0) throw new NotFoundException();
+    if (credential[0].userId !== userId) throw new ForbiddenException();
+    return await this.repository.deleteCredential(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} credential`;
+  async deleteAllCredentials(userId: number) {
+    return await this.repository.deleteAllCredentials(userId);
   }
 }
