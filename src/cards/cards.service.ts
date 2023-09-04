@@ -1,26 +1,39 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCardDto } from './dto/create-card.dto';
-import { UpdateCardDto } from './dto/update-card.dto';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { CardsRepository } from './cards.repository';
+import { CardsDto } from './dto/cards.dto';
 
 @Injectable()
 export class CardsService {
-  create(createCardDto: CreateCardDto) {
-    return 'This action adds a new card';
+  constructor(private readonly repository: CardsRepository) {}
+
+  async createCard(cardDTO: CardsDto, userId: number) {
+    const card = await this.repository.findCardByUserIdAndTitle( userId, cardDTO.title );
+    if (card) throw new ConflictException('A title with that name already exists.');
+
+    const cardByNumber = await this.repository.findCardByNumber(cardDTO.number);
+    if (cardByNumber) throw new ConflictException();
+    return await this.repository.createCard(cardDTO, userId);
   }
 
-  findAll() {
-    return `This action returns all cards`;
+  async findAllCards(userId: number) {
+    return await this.repository.findAllCards(userId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
+  async findCardById(id: number, userId: number) {
+    const card = await this.repository.findCardById(id);
+    if (card.length === 0) throw new NotFoundException();
+    if (card[0].userId !== userId) throw new ForbiddenException();
+    return card;
   }
 
-  update(id: number, updateCardDto: UpdateCardDto) {
-    return `This action updates a #${id} card`;
+  async deleteCard(id: number, userId: number) {
+    const card = await this.repository.findCardById(id);
+    if (card.length === 0) throw new NotFoundException();
+    if (card[0].userId !== userId) throw new ForbiddenException();
+    return await this.repository.deleteCard(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} card`;
+  async deleteAllCards(userId: number) {
+    return await this.repository.deleteAllCards(userId);
   }
 }

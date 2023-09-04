@@ -1,34 +1,83 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CardsService } from './cards.service';
-import { CreateCardDto } from './dto/create-card.dto';
+import { AuthGuard } from '@/guards/auth.guard';
+import { CardsDto } from './dto/cards.dto';
+import { Users } from '@/decorators/user.decorator';
+import { User } from '@prisma/client';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiParam,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
 import { UpdateCardDto } from './dto/update-card.dto';
 
+@UseGuards(AuthGuard)
+@ApiBearerAuth('Authorization')
 @Controller('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
   @Post()
-  create(@Body() createCardDto: CreateCardDto) {
-    return this.cardsService.create(createCardDto);
+  @ApiBody({ type: CardsDto })
+  @ApiOperation({ summary: 'Create card' })
+  @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
+  @ApiConflictResponse({ description: 'Title or card number already exist' })
+  @ApiCreatedResponse({ description: 'Success', type: UpdateCardDto })
+  async createCredential(@Body() cardDTO: CardsDto, @Users() user: User) {
+    return await this.cardsService.createCard(cardDTO, user.id);
   }
 
   @Get()
-  findAll() {
-    return this.cardsService.findAll();
+  @ApiOperation({ summary: 'Find all cards' })
+  @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
+  @ApiOkResponse({ description: 'Success', type: [UpdateCardDto] })
+  async findAllCards(@Users() user: User) {
+    return this.cardsService.findAllCards(user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cardsService.findOne(+id);
+  @Get('/:id')
+  @ApiOperation({ summary: 'Find card by cardId' })
+  @ApiParam({ name: 'id', description: 'Card id', example: 5 })
+  @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
+  @ApiBadRequestResponse({ description: 'Id not valid' })
+  @ApiNotFoundResponse({ description: 'There is no card for the submitted id' })
+  @ApiForbiddenResponse({ description: 'CardId belongs to another user' })
+  @ApiOkResponse({ description: 'Success', type: UpdateCardDto })
+  async findCredentialById(
+    @Param('id', ParseIntPipe) id: number,
+    @Users() user: User,
+  ) {
+    if (id <= 0) throw new BadRequestException('ID must be a positive integer');
+    return await this.cardsService.findCardById(id, user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-    return this.cardsService.update(+id, updateCardDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardsService.remove(+id);
+  @Delete('/:id')
+  @ApiOperation({ summary: 'Delete card by cardId' })
+  @ApiParam({ name: 'id', description: 'Card id', example: 5 })
+  @ApiBadRequestResponse({ description: 'Id not valid' })
+  @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
+  @ApiForbiddenResponse({ description: 'CardId belongs to another user' })
+  @ApiOkResponse({ description: 'Success' })
+  async deleteCard(@Param('id', ParseIntPipe) id: number, @Users() user: User) {
+    if (id <= 0) throw new BadRequestException('ID must be a positive integer');
+    return await this.cardsService.deleteCard(id, user.id);
   }
 }

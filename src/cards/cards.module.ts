@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { CardsService } from './cards.service';
 import { CardsController } from './cards.controller';
+import { CardsService } from './cards.service';
+import { UsersModule } from '@/users/users.module';
+import { CardsRepository } from './cards.repository';
 
 @Module({
+  imports: [UsersModule],
   controllers: [CardsController],
-  providers: [CardsService],
+  providers: [CardsService, CardsRepository],
+  exports: [CardsService],
 })
 export class CardsModule {}
