@@ -1,26 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { SignInDTO } from './dto/signIn.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { SignUpDto } from './dto/signUp.dto';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '@/users/users.service';
+import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  private EXPIRATION_TIME = '7 days';
+  private ISSUER = 'DrivenPass';
+  private AUDIENCE = 'users';
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+  ) {}
+
+  async register(signUpDto: SignUpDto) {
+    return await this.usersService.create(signUpDto);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async login(signInDTO: SignInDTO) {
+    const { email, password } = signInDTO;
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user) throw new UnauthorizedException('Email or password not valid.');
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new UnauthorizedException('Email or password not valid.');
+
+    return this.createToken(user);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  createToken(user: User) {
+    const { id, email } = user;
+
+    const token = this.jwtService.sign(
+      { email },
+      {
+        expiresIn: this.EXPIRATION_TIME,
+        subject: String(id),
+        issuer: this.ISSUER,
+        audience: this.AUDIENCE,
+      },
+    );
+    return { token };
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  checkToken(token: string) {
+    const data = this.jwtService.verify(token, {
+      audience: this.AUDIENCE,
+      issuer: this.ISSUER,
+    });
+    return data;
   }
 }
