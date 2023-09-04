@@ -74,7 +74,7 @@ export class CredentialsController {
 
   @Delete('/:id')
   @ApiOperation({ summary: 'Delete credential by credentialId' })
-  @ApiParam({ name: 'id', description: 'Credential id', example: 1 })
+  @ApiParam({ name: 'id', description: 'Credential id', example: 5 })
   @ApiBadRequestResponse({ description: 'Id not valid' })
   @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
   @ApiForbiddenResponse({ description: 'CredentialId belongs to another user' })

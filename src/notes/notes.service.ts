@@ -1,26 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { NotesRepository } from './notes.repository';
+import { NotesDTO } from './dto/notes.dto';
 
 @Injectable()
 export class NotesService {
-  create(createNoteDto: CreateNoteDto) {
-    return 'This action adds a new note';
+  constructor(private readonly repository: NotesRepository) {}
+
+  async createNote(noteDTO: NotesDTO, userId: number) {
+    const note = await this.repository.getNoteByTitleAndUserId( noteDTO.title, userId );
+    if (note) throw new ConflictException();
+    return await this.repository.createNotes(noteDTO, userId);
   }
 
-  findAll() {
-    return `This action returns all notes`;
+  async findAllNotes(userId: number) {
+    return await this.repository.findAllNotes(userId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} note`;
+  async findNoteById(id: number, userId: number) {
+    const note = await this.repository.findNoteById(id);
+    if (!note) throw new NotFoundException();
+    if (note.userId !== userId) throw new ForbiddenException();
+    return [note];
   }
 
-  update(id: number, updateNoteDto: UpdateNoteDto) {
-    return `This action updates a #${id} note`;
+  async deleteNote(id: number, userId: number) {
+    const note = await this.repository.findNoteById(id);
+    if (!note) throw new NotFoundException();
+    if (note.userId !== userId) throw new ForbiddenException();
+    return await this.repository.deleteNote(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} note`;
+  async deleteAllNotes(userId: number) {
+    return await this.repository.deleteAllNotes(userId);
   }
 }
