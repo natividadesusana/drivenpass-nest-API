@@ -2,10 +2,9 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 export class E2EUtils {
   static async cleanDb(prisma: PrismaService) {
-    await prisma.wifi.deleteMany();
-    await prisma.credentials.deleteMany();
-    await prisma.notes.deleteMany();
-    await prisma.cards.deleteMany();
-    await prisma.users.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.credential.deleteMany();
+    await prisma.note.deleteMany();
+    await prisma.card.deleteMany();
   }
 }
