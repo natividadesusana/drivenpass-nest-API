@@ -1,4 +1,4 @@
-import { SignInDTO } from './dto/signIn.dto';
+import { SignInDto } from './dto/signIn.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignUpDto } from './dto/signUp.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -17,11 +17,11 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
-  async register(signUpDto: SignUpDto) {
+  async signUp(signUpDto: SignUpDto) {
     return await this.usersService.create(signUpDto);
   }
 
-  async login(signInDTO: SignInDTO) {
+  async signIn(signInDTO: SignInDto) {
     const { email, password } = signInDTO;
     const user = await this.usersService.getUserByEmail(email);
     if (!user) throw new UnauthorizedException('Email or password not valid.');
