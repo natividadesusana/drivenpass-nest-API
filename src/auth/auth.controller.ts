@@ -1,17 +1,26 @@
 import { AuthService } from './auth.service';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { SignUpDto } from './dto/signUp.dto';
-import { SignInDTO } from './dto/signIn.dto';
-import { ApiBadRequestResponse, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { SignInDto } from './dto/signIn.dto';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('SignUp')
+  @Post('signup')
   @ApiBody({ type: SignUpDto })
-  @ApiOperation({ summary: 'SignUp a user' })
+  @ApiOperation({ summary: 'Register a user' })
   @ApiConflictResponse({ description: 'Email already in use' })
   @ApiBadRequestResponse({ description: 'Email or password not sent' })
   @ApiCreatedResponse({
@@ -21,20 +30,20 @@ export class AuthController {
       properties: {
         id: { type: 'number', example: 1 },
         email: { type: 'string', example: 'example@example.com' },
-        password: { type: 'string', example: '@hashedPassword123' },
+        password: { type: 'string', example: 'hashedPassword' },
         createdAt: { type: 'string', example: '2023-09-03T10:00:00.000Z' },
         updatedAt: { type: 'string', example: '2023-09-03T10:00:00.000Z' },
       },
     },
   })
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() signUpDto: SignUpDto) {
-    return this.authService.register(signUpDto);
+  register(@Body() signUpDtoDTO: SignUpDto) {
+    return this.authService.signUp(signUpDtoDTO);
   }
 
-  @Post('SignIn')
+  @Post('signin')
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ type: SignInDTO })
+  @ApiBody({ type: SignInDto })
   @ApiOperation({ summary: 'Authenticate a user' })
   @ApiBadRequestResponse({ description: 'Email or password not sent' })
   @ApiUnauthorizedResponse({ description: 'Incorrect email or password' })
@@ -42,7 +51,7 @@ export class AuthController {
     description: 'Return a token for use',
     schema: { type: 'object', properties: { token: { type: 'string' } } },
   })
-  login(@Body() signInDTO: SignInDTO) {
-    return this.authService.login(signInDTO);
+  login(@Body() signInDTO: SignInDto) {
+    return this.authService.signIn(signInDTO);
   }
 }
