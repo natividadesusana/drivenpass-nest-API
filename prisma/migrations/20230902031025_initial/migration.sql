@@ -10,6 +10,16 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
+CREATE TABLE "session" (
+    "id" SERIAL NOT NULL,
+    "token" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "credentials" (
     "id" SERIAL NOT NULL,
     "title" VARCHAR(255) NOT NULL,
