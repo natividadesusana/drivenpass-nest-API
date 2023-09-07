@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-export class SignInDTO {
+export class SignInDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -9,7 +9,7 @@ export class SignInDTO {
   @IsNotEmpty()
   password: string;
 
-  constructor(params?: Partial<SignInDTO>) {
+  constructor(params?: Partial<SignInDto>) {
     if (params) Object.assign(this, params);
   }
 }
