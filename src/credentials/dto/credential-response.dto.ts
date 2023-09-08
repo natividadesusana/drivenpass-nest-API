@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CredentialDto } from './credential.dto';
 
-export class UpdateCredentialDto extends (CredentialDto) {
+export class CredentialResponse extends (CredentialDto) {
   @ApiProperty({ type: 'number', example: 5 })
   id: number;
 

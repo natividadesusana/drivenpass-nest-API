@@ -14,6 +14,7 @@ import { AuthGuard } from '@/guards/auth.guard';
 import { CredentialDto } from './dto/credential.dto';
 import { Users } from '@/decorators/user.decorator';
 import { User } from '@prisma/client';
+import { CredentialResponse } from './dto/credential-response.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -25,12 +26,13 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UpdateCredentialDto } from './dto/update-credential.dto';
 
 @UseGuards(AuthGuard)
 @ApiBearerAuth('Authorization')
+@ApiTags('Credentials - Login information for a website or service')
 @Controller('credentials')
 export class CredentialsController {
   constructor(private readonly credentialsService: CredentialsService) {}
@@ -40,18 +42,18 @@ export class CredentialsController {
   @ApiOperation({ summary: 'Create credential' })
   @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
   @ApiConflictResponse({ description: 'Title already exist' })
-  @ApiCreatedResponse({ description: 'Success', type: UpdateCredentialDto })
+  @ApiCreatedResponse({ description: 'Success', type: CredentialResponse })
   async createCredential(
     @Body() credentialDTO: CredentialDto,
     @Users() user: User,
   ) {
-    return await this.credentialsService.createCredential( user.id, credentialDTO );
+    return await this.credentialsService.createCredential(user.id, credentialDTO );
   }
 
   @Get()
   @ApiOperation({ summary: 'Find all credentials' })
   @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
-  @ApiOkResponse({ description: 'Success', type: [UpdateCredentialDto] })
+  @ApiOkResponse({ description: 'Success - returns an array of objects', type: [CredentialResponse] })
   async findAllCredentials(@Users() user: User) {
     return await this.credentialsService.findAllCredentialsByUserId(user.id);
   }
@@ -63,7 +65,7 @@ export class CredentialsController {
   @ApiBadRequestResponse({ description: 'Id not valid' })
   @ApiNotFoundResponse({ description: 'There is no credential for the submitted id' })
   @ApiForbiddenResponse({ description: 'CredentialId belongs to another user' })
-  @ApiOkResponse({ description: 'Success', type: UpdateCredentialDto })
+  @ApiOkResponse({ description: 'Success', type: CredentialResponse })
   async findCredentialById(
     @Param('id', ParseIntPipe) id: number,
     @Users() user: User,
