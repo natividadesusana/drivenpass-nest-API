@@ -1,4 +1,4 @@
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserDto } from './dto/create-user.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -9,7 +9,7 @@ export class UsersRepository {
 
   private SALT = 10;
 
-  create(createUserDto: CreateUserDto) {
+  create(createUserDto: UserDto) {
     return this.prisma.user.create({
       data: {
         ...createUserDto,
