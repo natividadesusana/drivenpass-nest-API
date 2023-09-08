@@ -14,7 +14,9 @@ import { AuthGuard } from '@/guards/auth.guard';
 import { CardsDto } from './dto/cards.dto';
 import { Users } from '@/decorators/user.decorator';
 import { User } from '@prisma/client';
+import { CardResponse } from './dto/card-response.dto';
 import {
+  ApiTags,
   ApiBody,
   ApiOperation,
   ApiBearerAuth,
@@ -27,8 +29,8 @@ import {
   ApiNotFoundResponse,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
-import { UpdateCardDto } from './dto/update-card.dto';
 
+@ApiTags('Cards')
 @UseGuards(AuthGuard)
 @ApiBearerAuth('Authorization')
 @Controller('cards')
@@ -40,7 +42,7 @@ export class CardsController {
   @ApiOperation({ summary: 'Create card' })
   @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
   @ApiConflictResponse({ description: 'Title or card number already exist' })
-  @ApiCreatedResponse({ description: 'Success', type: UpdateCardDto })
+  @ApiCreatedResponse({ description: 'Success', type: CardResponse })
   async createCredential(@Body() cardDTO: CardsDto, @Users() user: User) {
     return await this.cardsService.createCard(cardDTO, user.id);
   }
@@ -48,7 +50,7 @@ export class CardsController {
   @Get()
   @ApiOperation({ summary: 'Find all cards' })
   @ApiUnauthorizedResponse({ description: 'Token not sent or invalid' })
-  @ApiOkResponse({ description: 'Success', type: [UpdateCardDto] })
+  @ApiOkResponse({ description: 'Success - returns an array of objects', type: [CardResponse] })
   async findAllCards(@Users() user: User) {
     return this.cardsService.findAllCards(user.id);
   }
@@ -60,7 +62,7 @@ export class CardsController {
   @ApiBadRequestResponse({ description: 'Id not valid' })
   @ApiNotFoundResponse({ description: 'There is no card for the submitted id' })
   @ApiForbiddenResponse({ description: 'CardId belongs to another user' })
-  @ApiOkResponse({ description: 'Success', type: UpdateCardDto })
+  @ApiOkResponse({ description: 'Success', type: CardResponse })
   async findCredentialById(
     @Param('id', ParseIntPipe) id: number,
     @Users() user: User,

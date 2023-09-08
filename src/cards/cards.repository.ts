@@ -2,7 +2,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { CardsDto } from './dto/cards.dto';
 import { Card } from '@prisma/client';
-import Cryptr from 'cryptr'; 
+const Cryptr = require('cryptr');
 
 @Injectable()
 export class CardsRepository {
@@ -11,61 +11,41 @@ export class CardsRepository {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  createCard(cardDTO: CardsDto, userId: number) {
+  createCard(cardDTo: CardsDto, userId: number) {
     return this.prisma.card.create({
       data: {
-        ...cardDTO,
-        cvv: this.cryptr.encrypt(cardDTO.cvv) as string,
-        password: this.cryptr.encrypt(cardDTO.password) as string,
+        ...cardDTo,
+        cvv: this.cryptr.encrypt(cardDTo.cvv) as string,
+        password: this.cryptr.encrypt(cardDTo.password) as string,
         userId,
       },
     });
   }
 
   findCardByUserIdAndTitle(userId: number, title: string) {
-    return this.prisma.card.findUnique({
-      where: {
-        userId_title: {
-          userId,
-          title,
-        },
-      },
-    });
+    return this.prisma.card.findUnique({ where: { userId_title: { userId, title } } });
   }
 
   async findAllCards(userId: number) {
-    const cards = await this.prisma.card.findMany({
-      where: { userId },
-    });
-
+    const cards = await this.prisma.card.findMany({ where: { userId } });
     return this.decryptCardsData(cards);
   }
 
   findCardByNumber(cardNumber: string) {
-    return this.prisma.card.findUnique({
-      where: { number: cardNumber },
-    });
+    return this.prisma.card.findUnique({ where: { number: cardNumber } });
   }
 
   async findCardById(id: number) {
-    const card = await this.prisma.card.findFirst({
-      where: { id },
-    });
+    const card = await this.prisma.card.findFirst({ where: { id } });
     return card ? this.decryptCardsData([card]) : [];
   }
 
   deleteCard(id: number) {
-    return this.prisma.card.delete({
-      where: { id },
-    });
+    return this.prisma.card.delete({ where: { id } });
   }
 
   deleteAllCards(userId: number) {
-    return this.prisma.card.deleteMany({
-      where: {
-        userId,
-      },
-    });
+    return this.prisma.card.deleteMany({ where: { userId } });
   }
 
   private decryptCardsData(cards: Card[]) {
