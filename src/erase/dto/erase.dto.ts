@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class EraseDTO {
+export class EraseDto {
   @IsString()
   @IsNotEmpty()
   password: string;
