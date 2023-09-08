@@ -11,16 +11,16 @@ export class CardsDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New Title',
-    description: 'New Title Description',
+    example: 'Card Bank',
+    description: 'Title for card',
   })
   title: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New Card Number',
-    description: 'New Card Number Description',
+    example: '1111222233334444',
+    description: 'Card Number',
   })
   @Length(13, 19, {
     message: 'Card number must be between 13 and 19 digits',
@@ -33,55 +33,55 @@ export class CardsDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New Name',
-    description: 'New Name Description',
+    example: 'Susana Natividade',
+    description: 'Name on the card',
   })
   name: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New CVV',
-    description: 'New CVV Description',
+    example: '123',
+    description: 'Card CVV',
   })
   cvv: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New Expiration Date',
-    description: 'New Expiration Date Description',
+    example: '10/24',
+    description: 'Card expiration date',
   })
   exp: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: 'New Password',
-    description: 'New Password Description',
+    example: '1234',
+    description: 'Card password',
   })
   password: string;
 
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
-    example: false,
-    description: 'Is not virtual card',
+    example: true,
+    description: 'Is virtual card',
   })
   isVirtual: boolean;
 
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
-    example: false,
-    description: 'Is not a credit card',
+    example: true,
+    description: 'Is a credit card',
   })
   isCredit: boolean;
 
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
-    example: true,
+    example: false,
     description: 'Is a debit card',
   })
   isDebit: boolean;

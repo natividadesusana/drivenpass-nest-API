@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CardsDto } from './cards.dto';
 
-export class UpdateCardDto extends (CardsDto) {
+export class CardResponse extends (CardsDto) {
     @ApiProperty({ type: 'number', example: 5 })
     id: number;
   
