@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '@/app.module';
 import { PrismaService } from '@/prisma/prisma.service';
 import { SignUpDto } from '@/auth/dto/signUp.dto';
-import { RegisterFactory } from '../factories/signup-factory';
+import { SignUpFactory } from '../factories/signup.factory';
 import { E2EUtils } from '../helpers';
 
 describe('authController (e2e)', () => {
@@ -31,15 +31,15 @@ describe('authController (e2e)', () => {
     await prisma.$disconnect();
   });
 
-  describe('/auth/register (POST)', () => {
+  describe('/auth/signup (POST)', () => {
     it('should create a user', async () => {
-      const registerDTO: SignUpDto = new SignUpDto({
+      const signUpDto: SignUpDto = new SignUpDto({
         email: 'email@teste.com',
-        password: 'NewPassword123',
+        password: '@StrongPassword1995',
       });
       await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO)
+        .post('/auth/signup')
+        .send(signUpDto)
         .expect(HttpStatus.CREATED);
 
       const users = await prisma.user.findMany();
@@ -47,69 +47,67 @@ describe('authController (e2e)', () => {
       const user = users[0];
       expect(user).toEqual({
         id: expect.any(Number),
-        email: registerDTO.email,
+        email: signUpDto.email,
         password: expect.any(String),
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
       });
     });
     it('should return status 400 if no password is sent', async () => {
-      const registerDTO: SignUpDto = new SignUpDto({
+      const signUpDto: SignUpDto = new SignUpDto({
         email: 'email@teste.com',
       });
       await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO)
+        .post('/auth/signup')
+        .send(signUpDto)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
     it('should return status 400 if no email is sent', async () => {
-      const registerDTO: SignUpDto = new SignUpDto({
-        password: 'NewPassword123',
+      const signUpDto: SignUpDto = new SignUpDto({
+        password: '@StrongPassword1995',
       });
       await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO)
+        .post('/auth/signup')
+        .send(signUpDto)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
     it('should return status 400 if a strong password is not sent', async () => {
-      const registerDTO: SignUpDto = new SignUpDto({
+      const signUpDto: SignUpDto = new SignUpDto({
         email: 'email@teste.com',
         password: 'password',
       });
       await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO)
+        .post('/auth/signup')
+        .send(signUpDto)
         .expect(HttpStatus.BAD_REQUEST);
     });
 
     it('should return status 409 if email is already in use', async () => {
-      const registerDTO: SignUpDto = new SignUpDto({
+      const signUpDto: SignUpDto = new SignUpDto({
         email: 'email@teste.com',
-        password: 'NewPassword123',
+        password: '@StrongPassword1995',
       });
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO);
+      await request(app.getHttpServer()).post('/auth/signup').send(signUpDto);
 
       await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(registerDTO)
+        .post('/auth/signup')
+        .send(signUpDto)
         .expect(HttpStatus.CONFLICT);
     });
   });
 
-  describe('/auth/login (POST)', () => {
+  describe('/auth/signin (POST)', () => {
     it('should return token if login is successful', async () => {
-      const user = await new RegisterFactory(prisma)
+      const user = await new SignUpFactory(prisma)
         .withEmail('email@teste.com')
-        .withPassword('NewPassword123')
+        .withPassword('@StrongPassword1995')
         .persist();
 
       const res = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: user.email, password: 'NewPassword123' })
+        .post('/auth/signin')
+        .send({ email: user.email, password: '@StrongPassword1995' })
         .expect(HttpStatus.OK);
 
       expect(res.body).toEqual({
@@ -118,49 +116,49 @@ describe('authController (e2e)', () => {
     });
 
     it('should return status 400 if no password is sent', async () => {
-      const user = await new RegisterFactory(prisma)
+      const user = await new SignUpFactory(prisma)
         .withEmail('email@teste.com')
-        .withPassword('NewPassword123')
+        .withPassword('@StrongPassword1995')
         .persist();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/auth/signin')
         .send({ email: user.email })
         .expect(HttpStatus.BAD_REQUEST);
     });
 
     it('should return status 400 if no email is sent', async () => {
-      await new RegisterFactory(prisma)
+      await new SignUpFactory(prisma)
         .withEmail('email@teste.com')
-        .withPassword('NewPassword123')
+        .withPassword('@StrongPassword1995')
         .persist();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ password: 'NewPassword123' })
+        .post('/auth/signin')
+        .send({ password: '@StrongPassword1995' })
         .expect(HttpStatus.BAD_REQUEST);
     });
 
     it('should return status 401 if email not valid', async () => {
-      await new RegisterFactory(prisma)
+      await new SignUpFactory(prisma)
         .withEmail('email@teste.com')
-        .withPassword('NewPassword123')
+        .withPassword('@StrongPassword1995')
         .persist();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: 'email@teste.com', password: 'NewPassword123' })
+        .post('/auth/signin')
+        .send({ email: 'other@email.com', password: '@StrongPassword1995' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
     it('should return status 401 if password not valid', async () => {
-      const user = await new RegisterFactory(prisma)
+      const user = await new SignUpFactory(prisma)
         .withEmail('email@teste.com')
-        .withPassword('NewPassword123')
+        .withPassword('@StrongPassword1995')
         .persist();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/auth/signin')
         .send({ email: user.email, password: '@InvalidPassword' })
         .expect(HttpStatus.UNAUTHORIZED);
     });
